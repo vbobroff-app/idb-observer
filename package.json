@@ -1,0 +1,26 @@
+{
+  "name": "idb-observer",
+  "version": "1.0.0",
+  "description": "IndexedDB API as Observable with rxjs ",
+  "type": "module",
+  "main": "dist/main",
+  "types": "dist/main",
+  "scripts": {
+    "test": "\"tsc -d  --declarationDir lib-dc --exclude src/types/**/* --outDir lib-esm\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vbobroff-app/idb-observer.git"
+  },
+  "keywords": [
+    "idb",
+    "idb-",
+    "indexed"
+  ],
+  "author": "Viktor Bobrov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vbobroff-app/idb-observer/issues"
+  },
+  "homepage": "https://github.com/vbobroff-app/idb-observer#readme"
+}
