@@ -8,10 +8,6 @@
 # Compiled binary addons (http://nodejs.org/api/addons.html)
 build/
 
-# If not using an output directory:
-*.js
-*.js.map
-
 # dependencies
 /node_modules
 /jspm_packages
