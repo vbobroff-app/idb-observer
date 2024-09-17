@@ -1,11 +1,14 @@
 import { catchError, fromEvent, map, merge, Observable, of, tap } from 'rxjs';
 import { IdbOpenRequestEvent } from './models';
+import { isRu } from './utils';
+import { openErrorMessage } from './defaults';
 
 export class IdbService {
   private readonly request: IDBOpenDBRequest;
 
   constructor(name: string, version?: number) {
-    this.request = indexedDB.open(name, version);
+    const db = indexedDB ? indexedDB : window.indexedDB;
+    this.request = db.open(name, version);
   }
 
   /**
@@ -36,7 +39,7 @@ export class IdbService {
     const error = fromEvent(this.request, 'error').pipe(
       tap((e) => {
         throw new Error(
-          `Ошибка при открытии БД. Код ошибки:, ${(e as IdbOpenRequestEvent).target.errorCode}`,
+          `${openErrorMessage} ${(e as IdbOpenRequestEvent).target.errorCode}`,
         );
       }),
       map(() => null),

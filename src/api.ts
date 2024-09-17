@@ -19,6 +19,14 @@ import {
   IdbResponseEvent,
   IdbTransactionEvent,
 } from './models';
+import { isRu } from './utils';
+import {
+  accessErrorMessage,
+  collectionErrorMessage,
+  notFoundError,
+  transactionCancelMessage,
+  transactionErrorMessage,
+} from './defaults';
 
 export class IdbRxJsApi {
   public db: IDBDatabase;
@@ -46,7 +54,10 @@ export class IdbRxJsApi {
     collection?: string,
   ): Observable<string | undefined> {
     if (!doc) {
-      console.error(`Невалидный объект создания ${doc}`);
+      const errorMessage = isRu()
+        ? 'Невалидный объект создания.'
+        : 'Creating object is no valid.';
+      console.error(`${errorMessage} ${doc}`);
       return of(undefined);
     }
 
@@ -55,7 +66,7 @@ export class IdbRxJsApi {
     }
 
     if (!collection) {
-      console.error(`Невалидная коллекция "${collection}"`);
+      console.error(`${collectionErrorMessage} "${collection}"`);
       return of(undefined);
     }
 
@@ -66,23 +77,25 @@ export class IdbRxJsApi {
 
     const transaction = request.transaction;
     if (!transaction) {
-      console.error(`Невалидная транзакция в 
-                "${collection}"`);
+      console.error(`${transactionErrorMessage} "${collection}"`);
       return of(undefined);
     }
 
     const abortEvent = fromEvent(transaction, 'abort').pipe(
       tap((e: Event) => {
         throw new Error(
-          `Транзакция была отменена, ${(e as IdbTransactionEvent)?.target?.error}`,
+          `${transactionCancelMessage} ${(e as IdbTransactionEvent)?.target?.error}`,
         );
       }),
     );
 
     const errorEvent = fromEvent(request, 'error').pipe(
       tap((e: Event) => {
+        const errorMessage = isRu()
+          ? 'Ошибка создания записи,'
+          : 'Record created error, ';
         throw new Error(
-          `Ошибка создания записи,  ${(e as IdbRequestEvent)?.target?.error}`,
+          `${errorMessage} ${(e as IdbRequestEvent)?.target?.error}`,
         );
       }),
     );
@@ -90,7 +103,10 @@ export class IdbRxJsApi {
     const successEvent = fromEvent(request, 'success').pipe(
       tap((e) => {
         if (!(e as IdbRequestEvent)?.target?.result) {
-          throw new Error(`Ошибка создания записи`);
+          const errorMessage = isRu()
+            ? 'Ошибка создания записи,'
+            : 'Record created error, ';
+          throw new Error(`${errorMessage}`);
         }
       }),
       map((e) => (e as IdbRequestEvent).target.result),
@@ -121,7 +137,7 @@ export class IdbRxJsApi {
     }
 
     if (!collection) {
-      console.error(`Невалидная коллекция "${collection}"`);
+      console.error(`${collectionErrorMessage} "${collection}"`);
       return of([]);
     }
 
@@ -132,15 +148,14 @@ export class IdbRxJsApi {
 
     const transaction = request.transaction;
     if (!transaction) {
-      console.error(`Невалидная транзакция в 
-                    "${collection}"`);
+      console.error(`${transactionErrorMessage} "${collection}"`);
       return of([]);
     }
 
     const abortEvent = fromEvent(transaction, 'abort').pipe(
       tap((e: Event) => {
         throw new Error(
-          `Транзакция была отменена, ${(e as IdbTransactionEvent)?.target?.error}`,
+          `${transactionCancelMessage}, ${(e as IdbTransactionEvent)?.target?.error}`,
         );
       }),
     );
@@ -148,7 +163,7 @@ export class IdbRxJsApi {
     const errorEvent = fromEvent(request, 'error').pipe(
       tap((e: Event) => {
         throw new Error(
-          `Ошибка доступа,  ${(e as IdbRequestEvent).target.error}`,
+          `${accessErrorMessage}  ${(e as IdbRequestEvent).target.error}`,
         );
       }),
     );
@@ -183,7 +198,7 @@ export class IdbRxJsApi {
     }
 
     if (!collection) {
-      console.error(`Невалидная коллекция "${collection}"`);
+      console.error(`${collectionErrorMessage} "${collection}"`);
       return of([]);
     }
 
@@ -191,8 +206,7 @@ export class IdbRxJsApi {
 
     const transaction = objectStore.transaction;
     if (!transaction) {
-      console.error(`Невалидная транзакция в 
-                    "${collection}"`);
+      console.error(`${transactionErrorMessage} "${collection}"`);
       return of([]);
     }
 
@@ -201,7 +215,7 @@ export class IdbRxJsApi {
     const abortEvent = fromEvent(transaction, 'abort').pipe(
       tap((e: Event) => {
         throw new Error(
-          `Транзакция была отменена, ${(e as IdbTransactionEvent).target.error}`,
+          `${transactionCancelMessage}, ${(e as IdbTransactionEvent).target.error}`,
         );
       }),
     );
@@ -210,7 +224,7 @@ export class IdbRxJsApi {
       fromEvent(request, 'error').pipe(
         tap((e: Event) => {
           throw new Error(
-            `Ошибка доступа к ${id}  ${(e as IdbRequestEvent)?.target?.error}`,
+            `${accessErrorMessage} ${id}  ${(e as IdbRequestEvent)?.target?.error}`,
           );
         }),
       );
@@ -220,7 +234,7 @@ export class IdbRxJsApi {
         tap((e: Event) => {
           const post = (e as IdbResponseEvent<T>)?.target?.result;
           if (!post) {
-            console.error(`ERROR: Ошибка доступа к ${id}, объект не найден`);
+            console.error(`${accessErrorMessage} ${id}, ${notFoundError}`);
           }
         }),
       );
@@ -260,7 +274,7 @@ export class IdbRxJsApi {
     }
 
     if (!collection) {
-      console.error(`Невалидная коллекция "${collection}"`);
+      console.error(`${collectionErrorMessage} "${collection}"`);
       return of(null);
     }
 
@@ -271,15 +285,14 @@ export class IdbRxJsApi {
 
     const transaction = request.transaction;
     if (!transaction) {
-      console.error(`Невалидная транзакция в 
-                    "${collection}"`);
+      console.error(`${transactionErrorMessage} "${collection}"`);
       return of(null);
     }
 
     const abortEvent = fromEvent(transaction, 'abort').pipe(
       tap((e: Event) => {
         throw new Error(
-          `Транзакция была отменена, ${(e as IdbTransactionEvent).target.error}`,
+          `${transactionCancelMessage} ${(e as IdbTransactionEvent).target.error}`,
         );
       }),
       map(() => null),
@@ -288,7 +301,7 @@ export class IdbRxJsApi {
     const errorEvent = fromEvent(request, 'error').pipe(
       tap((e: Event) => {
         throw new Error(
-          `Ошибка доступа,  ${(e as IdbRequestEvent).target.error}`,
+          `${accessErrorMessage}  ${(e as IdbRequestEvent).target.error}`,
         );
       }),
       map(() => null),
@@ -298,7 +311,7 @@ export class IdbRxJsApi {
       tap((e: Event) => {
         const value = (e as IdbResponseEvent<T>)?.target?.result as T;
         if (!value) {
-          throw new Error(`Ошибка доступа к ${query}, объект не найден`);
+          throw new Error(`${accessErrorMessage} ${query}, ${notFoundError}`);
         }
       }),
       map((e: Event) => (e as IdbResponseEvent<T>).target.result),
@@ -329,12 +342,12 @@ export class IdbRxJsApi {
     id?: string | number,
     data?: {},
     collection?: string,
-  ): Observable<T | null> {
+  ): Observable<IDBValidKey | null> {
     if (!id) {
       id = (data as { id?: string | number })?.id;
     }
     if (!id) {
-      console.error(`Невалидное значение id= "${id}"`);
+      console.error(`Key no found, id= "${id}"`);
       return of(null);
     }
 
@@ -347,7 +360,7 @@ export class IdbRxJsApi {
     }
 
     if (!collection) {
-      console.error(`Невалидная коллекция "${collection}"`);
+      console.error(`${collectionErrorMessage} "${collection}"`);
       return of(null);
     }
 
@@ -365,7 +378,7 @@ export class IdbRxJsApi {
         const value = (e as IdbResponseEvent<IDBCursorWithValue>)?.target
           ?.result?.value as T;
         if (!value) {
-          throw new Error(`Ошибка доступа к ${id}, объект не найден`);
+          throw new Error(`${accessErrorMessage} ${id}, ${notFoundError}`);
         }
         return value as T;
       }),
@@ -379,7 +392,7 @@ export class IdbRxJsApi {
       fromEvent(request.transaction as IDBTransaction, 'abort').pipe(
         tap((e: Event) => {
           throw new Error(
-            `Транзакция была отменена, ${(e as IdbTransactionEvent).target.error}`,
+            `${transactionCancelMessage}, ${(e as IdbTransactionEvent).target.error}`,
           );
         }),
         map(() => null),
@@ -389,7 +402,7 @@ export class IdbRxJsApi {
       fromEvent(request, 'error').pipe(
         tap((e: Event) => {
           throw new Error(
-            `Ошибка при мутации,  ${(e as IdbRequestEvent).target.error}`,
+            `Mutation error,  ${(e as IdbRequestEvent).target.error}`,
           );
         }),
         map(() => null),
@@ -397,7 +410,10 @@ export class IdbRxJsApi {
 
     const successEvent = (request: IDBRequest<IDBValidKey>) =>
       fromEvent(request, 'success').pipe(
-        map((e: Event) => (e as IdbResponseEvent<T>).target.result as T),
+        map(
+          (e: Event) =>
+            (e as IdbResponseEvent<IDBValidKey>).target.result as IDBValidKey,
+        ),
       );
 
     return successCheck.pipe(
@@ -431,7 +447,7 @@ export class IdbRxJsApi {
     }
 
     if (!collection) {
-      console.error(`Невалидная коллекция "${collection}"`);
+      console.error(`${collectionErrorMessage} "${collection}"`);
       return of(void 0);
     }
 
@@ -449,7 +465,7 @@ export class IdbRxJsApi {
         const value = (e as IdbResponseEvent<IDBCursorWithValue>)?.target
           ?.result?.value;
         if (!value) {
-          throw new Error(`Ошибка доступа к ${id}, объект не найден`);
+          throw new Error(`${accessErrorMessage} ${id}, ${notFoundError}`);
         }
       }),
     );
@@ -458,7 +474,7 @@ export class IdbRxJsApi {
       fromEvent(request.transaction as IDBTransaction, 'abort').pipe(
         tap((e: Event) => {
           throw new Error(
-            `Транзакция была отменена, ${(e as IdbTransactionEvent).target.error}`,
+            `${transactionCancelMessage}, ${(e as IdbTransactionEvent).target.error}`,
           );
         }),
       );
@@ -467,7 +483,7 @@ export class IdbRxJsApi {
       fromEvent(request, 'error').pipe(
         tap((e: Event) => {
           throw new Error(
-            `Ошибка при удалении,  ${(e as IdbRequestEvent).target.error}`,
+            `Delete error,  ${(e as IdbRequestEvent).target.error}`,
           );
         }),
       );

@@ -1,3 +1,6 @@
+export interface UserLanguageNavigator extends Navigator {
+  userLanguage: string;
+}
 export interface IdbRequestEvent extends Event {
   target: IDBRequest;
 }
