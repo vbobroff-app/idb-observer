@@ -6,12 +6,19 @@ import { isRu, isValid } from './utils';
 import { accessErrorMessage, collectionErrorMessage, dbErrorMessage, notFoundError, transactionCancelMessage, transactionErrorMessage } from './defaults';
 
 export class IdbApi {
-  private db: IDBDatabase;
+  private db: IDBDatabase | undefined;
   private collection: string | undefined;
 
-  constructor(db: IDBDatabase, collection?: string) {
+  constructor(db?: IDBDatabase, collection?: string) {
     this.db = db;
     this.collection = collection;
+  }
+
+  public init(db: IDBDatabase, collection?: string, keyPath?: string, autoIncrement?: boolean) {
+    this.setDb(db);
+    if (collection) {
+      this.setCollection(collection, keyPath, autoIncrement);
+    }
   }
 
   public setDb(db: IDBDatabase) {
@@ -21,7 +28,7 @@ export class IdbApi {
       }
       this.db = db;
     } catch {
-      console.error(`DB don't set in API.`);
+      console.error(`ERROR: DB don't set in API.`);
     }
   }
 
@@ -44,7 +51,7 @@ export class IdbApi {
       }
       this.collection = name;
     } catch {
-      console.error(`Collection don't set in API`);
+      console.error(`ERROR: Collection don't set in API`);
     }
   }
 
@@ -64,7 +71,7 @@ export class IdbApi {
   create<T>(doc: T, key?: IDBValidKey, collection?: string): Observable<string | undefined> {
     if (!doc) {
       const errorMessage = isRu() ? 'Невалидный объект создания.' : 'Creating object is no valid.';
-      console.error(`${errorMessage} ${doc}`);
+      console.error(`ERROR: ${errorMessage} ${doc}`);
       return of(undefined);
     }
 
@@ -73,7 +80,12 @@ export class IdbApi {
     }
 
     if (!collection || !isValid(collection)) {
-      console.error(`${collectionErrorMessage} "${collection}"`);
+      console.error(`ERROR: ${collectionErrorMessage} "${collection}"`);
+      return of(undefined);
+    }
+
+    if (!this.db) {
+      console.error(`ERROR: ${dbErrorMessage}`);
       return of(undefined);
     }
 
@@ -81,7 +93,7 @@ export class IdbApi {
 
     const transaction = request.transaction;
     if (!transaction) {
-      console.error(`${transactionErrorMessage} "${collection}"`);
+      console.error(`ERROR: ${transactionErrorMessage} "${collection}"`);
       return of(undefined);
     }
 
@@ -133,7 +145,12 @@ export class IdbApi {
     }
 
     if (!collection || !isValid(collection)) {
-      console.error(`${collectionErrorMessage} "${collection}"`);
+      console.error(`ERROR: ${collectionErrorMessage} "${collection}"`);
+      return of([]);
+    }
+
+    if (!this.db) {
+      console.error(`ERROR: ${dbErrorMessage}`);
       return of([]);
     }
 
@@ -141,7 +158,7 @@ export class IdbApi {
 
     const transaction = request.transaction;
     if (!transaction) {
-      console.error(`${transactionErrorMessage} "${collection}"`);
+      console.error(`ERROR: ${transactionErrorMessage} "${collection}"`);
       return of([]);
     }
 
@@ -185,7 +202,12 @@ export class IdbApi {
     }
 
     if (!collection || !isValid(collection)) {
-      console.error(`${collectionErrorMessage} "${collection}"`);
+      console.error(`ERROR: ${collectionErrorMessage} "${collection}"`);
+      return of([]);
+    }
+
+    if (!this.db) {
+      console.error(`ERROR: ${dbErrorMessage}`);
       return of([]);
     }
 
@@ -193,7 +215,7 @@ export class IdbApi {
 
     const transaction = objectStore.transaction;
     if (!transaction) {
-      console.error(`${transactionErrorMessage} "${collection}"`);
+      console.error(`ERROR: ${transactionErrorMessage} "${collection}"`);
       return of([]);
     }
 
@@ -244,7 +266,12 @@ export class IdbApi {
     }
 
     if (!collection || !isValid(collection)) {
-      console.error(`${collectionErrorMessage} "${collection}"`);
+      console.error(`ERROR: ${collectionErrorMessage} "${collection}"`);
+      return of(undefined);
+    }
+
+    if (!this.db) {
+      console.error(`ERROR: ${dbErrorMessage}`);
       return of(undefined);
     }
 
@@ -252,7 +279,7 @@ export class IdbApi {
 
     const transaction = request.transaction;
     if (!transaction) {
-      console.error(`${transactionErrorMessage} "${collection}"`);
+      console.error(`ERROR: ${transactionErrorMessage} "${collection}"`);
       return of(null);
     }
 
@@ -307,7 +334,7 @@ export class IdbApi {
     }
 
     if (!collection || !isValid(collection)) {
-      console.error(`${collectionErrorMessage} "${collection}"`);
+      console.error(`ERROR: ${collectionErrorMessage} "${collection}"`);
       return of(undefined);
     }
 
@@ -315,12 +342,17 @@ export class IdbApi {
       key = (data as { id?: string | number })?.id;
     }
     if (!key) {
-      console.error(`Key no found, id= "${key}"`);
+      console.error(`ERROR: Key no found, id= "${key}"`);
       return of(null);
     }
 
     if (!data) {
       data = {};
+    }
+
+    if (!this.db) {
+      console.error(`ERROR: ${dbErrorMessage}`);
+      return of(undefined);
     }
 
     const objectStore = this.db.transaction(collection, 'readwrite').objectStore(collection);
@@ -389,8 +421,13 @@ export class IdbApi {
     }
 
     if (!collection || !isValid(collection)) {
-      console.error(`${collectionErrorMessage} "${collection}"`);
+      console.error(`ERROR: ${collectionErrorMessage} "${collection}"`);
       return of(void 0);
+    }
+
+    if (!this.db) {
+      console.error(`ERROR: ${dbErrorMessage}`);
+      return of(undefined);
     }
 
     const objectStore = this.db.transaction(collection, 'readwrite').objectStore('posts');
