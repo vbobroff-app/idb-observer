@@ -1,7 +1,17 @@
 # idb-observer
 Rxjs Observable typescript client library for IndexedDB with API like some documents DB.
 ## how to install
-## how it Works
+  with npm:
+```sh
+npm i idb-observer
+```
+  with yarn:
+
+```sh
+yarn add idb-observer
+```
+
+## how it works
 ## new client
 ## api methods
 
