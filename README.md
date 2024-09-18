@@ -1,5 +1,7 @@
 # idb-observer
-Observable typescript client library for IndexedDB with API like some documents DB. RxJs v^7 should be install in dependeces.
+Observable typescript client library for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) with API like some documents DB.  
+> [!NOTE]
+>Peer-dependencies: [RxJs](https://rxjs.dev/) v>6 should be installed.
 ## how to install
   with npm:
 ```sh
@@ -12,8 +14,8 @@ yarn add idb-observer
 ```
 
 ## how it works
-This package introduces two classes for IndexedDb. There are **IdClient** and **IdbApi** in it. 
-**IdClient** for initialise DB and **IdbApi** to manipulate entities in it.
+This package introduces two classes for IndexedDb. It contains **IdClient** and **IdbApi**.
+The first one, **IdClient** to initialize the DB and **IdbApi** to manipulate entities in it.
 ## new client
 **IdClient** includes follow methods:
 * .init() - to initialize and get db object,
@@ -35,6 +37,8 @@ client.upgrade().subscribe((db) => {
 });
 client.init().subscribe((db)=> { idbApi.init(db, collection); });
 ```
+> [!TIP]
+> Use upgrade subscription to create objectStore, indexes etc., see [doc](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Using_IndexedDB)
 
 ## api methods
 
@@ -53,11 +57,7 @@ interface Post {
  title: string;
  description: string;
  author: string;
- created?: Date;
- changed?: Date;
- watched?: Date;
- icon?: string;   
-}
+};
 const id = '#111';
 const post: Post = {
   id,
@@ -65,7 +65,7 @@ const post: Post = {
   title: 'This is Post #111',
   description: 'description',
   author: 'Viktor Bobrofff'
-}
+};
 
 idbApi.create<Post>(post).subscribe((id)=>console.log('created', id));
 idbApi.update<Post>(id, {author: 'Ivan Ivanov'}).subscribe((id)=>console.log('updated', id));
@@ -73,7 +73,8 @@ idbApi.list<Post>().subscribe((posts) => console.log('list', posts));
 idbApi.get<Post>(id).subscribe((post)=>console.log('get', post));
 idbApi.remove(id).subscribe();
 ```
-Don't forget to unsubsribe!
+> [!WARNING]
+>Don't forget to unsubsribe!
 
 |API method|Parameters|result|
 |---       |---       |---   |
