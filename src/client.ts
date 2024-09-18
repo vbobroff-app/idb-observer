@@ -1,6 +1,5 @@
 import { catchError, fromEvent, map, merge, Observable, of, tap } from 'rxjs';
 import { IdbOpenRequestEvent } from './models';
-import { isRu } from './utils';
 import { openErrorMessage } from './defaults';
 
 export class IdbService {
@@ -32,15 +31,11 @@ export class IdbService {
   }
 
   private common(successEvent: string) {
-    const success = fromEvent(this.request, successEvent).pipe(
-      map((e) => (e as IdbOpenRequestEvent).target.result),
-    );
+    const success = fromEvent(this.request, successEvent).pipe(map((e) => (e as IdbOpenRequestEvent).target.result));
 
     const error = fromEvent(this.request, 'error').pipe(
       tap((e) => {
-        throw new Error(
-          `${openErrorMessage} ${(e as IdbOpenRequestEvent).target.errorCode}`,
-        );
+        throw new Error(`${openErrorMessage} ${(e as IdbOpenRequestEvent).target.errorCode}`);
       }),
       map(() => null),
     );

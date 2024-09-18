@@ -30,9 +30,10 @@ export default [
   {
     rules: {
       semi: 'warn',
-      'prettier/prettier': ['error', { singleQuote: true }],
+      'prettier/prettier': ['warn', { singleQuote: true, printWidth: 180, experimentalTernaries: true, endOfLine: 'auto' }],
+      indent: ['warn', 2, { SwitchCase: 1, offsetTernaryExpressions: true, flatTernaryExpressions: true }],
       'no-unused-vars': 'warn',
-      'arrow-parens': 'warn', // TODO check it
+      'arrow-parens': 'warn',
       'no-unused-expressions': 'off',
       'prefer-destructuring': 'off',
       'no-restricted-syntax': 'off',
