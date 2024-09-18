@@ -234,7 +234,7 @@ export class IdbApi {
     );
   }
 
-  get<T>(query: IDBValidKey | IDBKeyRange, collection?: string): Observable<T | T[] | null> {
+  get<T>(query: IDBValidKey | IDBKeyRange, collection?: string): Observable<T | T[] | null | undefined> {
     if (!query) {
       return of(null);
     }
@@ -245,7 +245,7 @@ export class IdbApi {
 
     if (!collection || !isValid(collection)) {
       console.error(`${collectionErrorMessage} "${collection}"`);
-      return of(null);
+      return of(undefined);
     }
 
     const request = this.db.transaction(collection).objectStore(collection).get(query);
@@ -301,7 +301,16 @@ export class IdbApi {
    *
    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/IDBObjectStore/put)
    */
-  update<T>(key?: string | number, data?: {}, collection?: string): Observable<IDBValidKey | null> {
+  update<T>(key?: string | number, data?: {}, collection?: string): Observable<IDBValidKey | null | undefined> {
+    if (!collection) {
+      collection = this.collection;
+    }
+
+    if (!collection || !isValid(collection)) {
+      console.error(`${collectionErrorMessage} "${collection}"`);
+      return of(undefined);
+    }
+
     if (!key) {
       key = (data as { id?: string | number })?.id;
     }
@@ -312,15 +321,6 @@ export class IdbApi {
 
     if (!data) {
       data = {};
-    }
-
-    if (!collection) {
-      collection = this.collection;
-    }
-
-    if (!collection || !isValid(collection)) {
-      console.error(`${collectionErrorMessage} "${collection}"`);
-      return of(null);
     }
 
     const objectStore = this.db.transaction(collection, 'readwrite').objectStore(collection);
