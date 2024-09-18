@@ -13,7 +13,7 @@ export default [
     plugins: { import: eslimport },
   },
   {
-    ignores: ['.eslintrc.js', 'webpack.config.js'],
+    ignores: ['.eslintrc.js', 'webpack.config.js', '*.d.ts', 'dist/', 'node_modules/'],
   },
   {
     languageOptions: {

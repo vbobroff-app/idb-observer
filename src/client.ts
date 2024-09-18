@@ -2,7 +2,7 @@ import { catchError, fromEvent, map, merge, Observable, of, tap } from 'rxjs';
 import { IdbOpenRequestEvent } from './models';
 import { openErrorMessage } from './defaults';
 
-export class IdbService {
+export default class IdbService {
   private readonly request: IDBOpenDBRequest;
 
   constructor(name: string, version?: number) {
