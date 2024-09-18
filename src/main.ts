@@ -1,2 +1,2 @@
 export { default } from './client';
-export * from './api';
+export { IdbApi } from './api';

@@ -5,7 +5,7 @@ import { IdbRequestEvent, IdbResponseEvent, IdbTransactionEvent } from './models
 import { isRu, isValid } from './utils';
 import { accessErrorMessage, collectionErrorMessage, dbErrorMessage, notFoundError, transactionCancelMessage, transactionErrorMessage } from './defaults';
 
-export default class IdbApi {
+export class IdbApi {
   private db: IDBDatabase;
   private collection: string | undefined;
 
