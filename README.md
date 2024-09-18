@@ -45,6 +45,35 @@ client.init().subscribe((db)=> { idbApi.init(db, collection); });
 * .remove
 
 ## sample
+Create and manipulate the Post object:
+```sh
+interface Post {
+ id?: string;
+ text: string;
+ title: string;
+ description: string;
+ author: string;
+ created?: Date;
+ changed?: Date;
+ watched?: Date;
+ icon?: string;   
+}
+const id = '#111';
+const post: Post = {
+  id,
+  text: 'Test of post',
+  title: 'This is Post #111',
+  description: 'description',
+  author: 'Viktor Bobrofff'
+}
+
+idbApi.create<Post>(post).subscribe((id)=>console.log('created', id));
+idbApi.update<Post>(id, {author: 'Ivan Ivanov'}).subscribe((id)=>console.log('updated', id));
+idbApi.list<Post>().subscribe((posts) => console.log('list', posts));
+idbApi.get<Post>(id).subscribe((post)=>console.log('get', post));
+idbApi.remove(id).subscribe();
+```
+Don't forget to unsubsribe!
 
 |API method|Parameters|result|
 |---       |---       |---   |
