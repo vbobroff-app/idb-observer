@@ -19,7 +19,7 @@ The first one, **IdClient** to initialize the DB and **IdbApi** to manipulate en
 ## new client
 **IdClient** includes follow methods:
 * .init() - to initialize and get db object,
-* .upgrade() - for the first time and whеn needs upgrade version.
+* .upgrade() - for the first time and whеn needs upgrade version.  
 Somthing like this helps: 
 
 ```sh
@@ -33,12 +33,12 @@ client.upgrade().subscribe((db) => {
   if (!db.objectStoreNames.contains(collection)) {
     db.createObjectStore(collection, { keyPath: 'id', autoIncrement: false });
   };
-  idbApi.init(db, collection);
 });
 client.init().subscribe((db)=> { idbApi.init(db, collection); });
 ```
 > [!TIP]
-> Use upgrade subscription to create objectStore, indexes etc., see [doc](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Using_IndexedDB)
+> Use the upgrade subscription to create objectStore, indexes etc., see [doc](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Using_IndexedDB).
+> Use the init subscription to get a database instance and pass it to the API object.
 
 ## api methods
 
