@@ -78,7 +78,7 @@ idbApi.clear().subscribe();
 > [!WARNING]
 >Don't forget to unsubsribe!
 
-## safe extraxt
+## safe extract
 Since database access methods and api initialization are asynchronous, exceptions are possible.  
 Use for safe extract:
 * .safe() - safe extract wrapper
