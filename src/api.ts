@@ -1,4 +1,4 @@
-import { catchError, from, fromEvent, map, merge, mergeMap, Observable, of, switchMap, take, tap, toArray } from 'rxjs';
+import { catchError, from, fromEvent, map, merge, mergeMap, Observable, of, Subject, switchMap, take, tap, toArray } from 'rxjs';
 
 import { IdbRequestEvent, IdbResponseEvent, IdbTransactionEvent } from './models';
 
@@ -15,6 +15,26 @@ import {
 } from './defaults';
 
 export class IdbApi {
+  public init$: Subject<IDBDatabase> = new Subject<IDBDatabase>();
+  /**
+   * (alias) Thread-safe method extract
+   * @source afterInit
+   * @param method
+   *
+   * @example const api = new IdbApi();
+   * const events$ = api.safe(api.list<Event>).pipe(tap((e:Event) => console.log(e)));
+   * const get$ = api.safe(()=>api.get<Event>('target1'));
+   * ...
+   * const client = new IdbClient();
+   * client.init().subscribe((db)=>api.init(db, 'coll'));
+   */
+  public safe = this.afterInit.bind(this);
+  /**
+   * (alias) Retrieves all values with check for init, waiting for init and returns after init.
+   * @source listAfterInit
+   */
+  public safeList = this.listAfterInit.bind(this);
+
   private db: IDBDatabase | undefined;
   private collection: string | undefined;
 
@@ -30,12 +50,29 @@ export class IdbApi {
     }
   }
 
+  /**
+   * Thread-safe method extract
+   * @alias safe
+   * @param method
+   *
+   * @example const api = new IdbApi();
+   * const events$ = api.safe(api.list<Event>).pipe(tap((e:Event) => console.log(e)));
+   * const get$ = api.safe(()=>api.get<Event>('target1'));
+   * ...
+   * const client = new IdbClient();
+   * client.init().subscribe((db)=>api.init(db, 'coll'));
+   */
+  afterInit<T>(method: () => Observable<T>) {
+    return this.initiated ? method() : this.init$.pipe(switchMap(() => method()));
+  }
+
   public setDb(db: IDBDatabase) {
     try {
       if (!db) {
         throw new Error(`${dbErrorMessage} ${db}`);
       }
       this.db = db;
+      this.init$.next(db);
     } catch {
       console.error(`ERROR: DB don't set in API.`);
     }
@@ -45,7 +82,7 @@ export class IdbApi {
     return this.db;
   }
 
-  public get IsInitiated() {
+  public get initiated() {
     return !!this.db;
   }
 
@@ -254,6 +291,14 @@ export class IdbApi {
   }
 
   /**
+   * Retrieves all values with check for init, waiting for init and returns after init.
+   * @alias safeList
+   */
+  listAfterInit<T>(query?: IDBKeyRange, collection?: string): Observable<T[]> {
+    return this.initiated ? this.list<T>(query, collection) : this.init$.pipe(switchMap(() => this.list<T>(query, collection)));
+  }
+
+  /**
    * Retrieves values by range in ids array.
    * @param ids - ids array [id1, id2,..., id]
    * @returns values array [value1, ...value2]
@@ -323,6 +368,13 @@ export class IdbApi {
     );
   }
 
+  /**
+   * Retrieves the value of the first record matching the given key or key range in query.
+   *
+   * If successful, request's result will be the value, or undefined if there was no matching record.
+   *
+   * [MDN Reference](https://developer.mozilla.org/docs/Web/API/IDBObjectStore/get)
+   */
   get<T>(query: IDBValidKey | IDBKeyRange, collection?: string): Observable<T | T[] | null | undefined> {
     if (!this.db) {
       console.error(`ERROR: ${dbErrorMessage}. ${notInitiatedMessage}`);
