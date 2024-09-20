@@ -3,7 +3,16 @@ import { catchError, from, fromEvent, map, merge, mergeMap, Observable, of, swit
 import { IdbRequestEvent, IdbResponseEvent, IdbTransactionEvent } from './models';
 
 import { isRu, isValid } from './utils';
-import { accessErrorMessage, collectionErrorMessage, dbErrorMessage, notFoundError, transactionCancelMessage, transactionErrorMessage } from './defaults';
+import {
+  accessErrorMessage,
+  clearErrorMessage,
+  collectionErrorMessage,
+  dbErrorMessage,
+  notFoundError,
+  notInitiatedMessage,
+  transactionCancelMessage,
+  transactionErrorMessage,
+} from './defaults';
 
 export class IdbApi {
   private db: IDBDatabase | undefined;
@@ -36,6 +45,10 @@ export class IdbApi {
     return this.db;
   }
 
+  public get IsInitiated() {
+    return !!this.db;
+  }
+
   public setCollection(name: string, keyPath?: string, autoIncrement?: boolean) {
     try {
       if (!this.db) {
@@ -60,6 +73,60 @@ export class IdbApi {
   }
 
   /**
+   * Clear store collection.
+   *
+   * [MDN Reference](https://developer.mozilla.org/docs/Web/API/IDBObjectStore/clear)
+   */
+  clear(collection?: string): Observable<void> {
+    if (!this.db) {
+      console.error(`ERROR: ${dbErrorMessage}. ${notInitiatedMessage}`);
+      return of(undefined);
+    }
+
+    if (!collection) {
+      collection = this.collection;
+    }
+
+    if (!collection || !isValid(collection)) {
+      console.error(`ERROR: ${collectionErrorMessage} "${collection}"`);
+      return of(undefined);
+    }
+
+    const request = this.db.transaction(collection, 'readwrite').objectStore(collection).clear();
+
+    const transaction = request.transaction;
+    if (!transaction) {
+      console.error(`ERROR: ${transactionErrorMessage} "${collection}"`);
+      return of(undefined);
+    }
+
+    const abortEvent = fromEvent(transaction, 'abort').pipe(
+      tap((e: Event) => {
+        throw new Error(`${transactionCancelMessage} ${(e as IdbTransactionEvent)?.target?.error}`);
+      }),
+      map(() => {}),
+    );
+
+    const errorEvent = fromEvent(request, 'error').pipe(
+      tap((e: Event) => {
+        throw new Error(`${clearErrorMessage} ${(e as IdbRequestEvent)?.target?.error}`);
+      }),
+      map(() => {}),
+    );
+
+    const successEvent = fromEvent(request, 'success').pipe(map(() => {}));
+
+    return merge(abortEvent, errorEvent, successEvent).pipe(
+      catchError((e: Error) =>
+        of(e).pipe(
+          tap((e) => console.error(e)),
+          map(() => {}),
+        ),
+      ),
+    );
+  }
+
+  /**
    * Adds or updates a record in store with the given value and key.
    *
    * If the store uses in-line keys and key is specified a "DataError" DOMException will be thrown.
@@ -75,17 +142,17 @@ export class IdbApi {
       return of(undefined);
     }
 
+    if (!this.db) {
+      console.error(`ERROR: ${dbErrorMessage}. ${notInitiatedMessage}`);
+      return of(undefined);
+    }
+
     if (!collection) {
       collection = this.collection;
     }
 
     if (!collection || !isValid(collection)) {
       console.error(`ERROR: ${collectionErrorMessage} "${collection}"`);
-      return of(undefined);
-    }
-
-    if (!this.db) {
-      console.error(`ERROR: ${dbErrorMessage}`);
       return of(undefined);
     }
 
@@ -140,17 +207,17 @@ export class IdbApi {
    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/IDBObjectStore/getAll)
    */
   list<T>(query?: IDBKeyRange, collection?: string): Observable<T[]> {
+    if (!this.db) {
+      console.error(`ERROR: ${dbErrorMessage}. ${notInitiatedMessage}`);
+      return of([]);
+    }
+
     if (!collection) {
       collection = this.collection;
     }
 
     if (!collection || !isValid(collection)) {
       console.error(`ERROR: ${collectionErrorMessage} "${collection}"`);
-      return of([]);
-    }
-
-    if (!this.db) {
-      console.error(`ERROR: ${dbErrorMessage}`);
       return of([]);
     }
 
@@ -193,6 +260,11 @@ export class IdbApi {
    *
    */
   getBy<T>(ids: string | number[], collection?: string): Observable<T[]> {
+    if (!this.db) {
+      console.error(`ERROR: ${dbErrorMessage}. ${notInitiatedMessage}`);
+      return of([]);
+    }
+
     if (!ids?.length) {
       return of([]);
     }
@@ -203,11 +275,6 @@ export class IdbApi {
 
     if (!collection || !isValid(collection)) {
       console.error(`ERROR: ${collectionErrorMessage} "${collection}"`);
-      return of([]);
-    }
-
-    if (!this.db) {
-      console.error(`ERROR: ${dbErrorMessage}`);
       return of([]);
     }
 
@@ -257,6 +324,11 @@ export class IdbApi {
   }
 
   get<T>(query: IDBValidKey | IDBKeyRange, collection?: string): Observable<T | T[] | null | undefined> {
+    if (!this.db) {
+      console.error(`ERROR: ${dbErrorMessage}. ${notInitiatedMessage}`);
+      return of(undefined);
+    }
+
     if (!query) {
       return of(null);
     }
@@ -267,11 +339,6 @@ export class IdbApi {
 
     if (!collection || !isValid(collection)) {
       console.error(`ERROR: ${collectionErrorMessage} "${collection}"`);
-      return of(undefined);
-    }
-
-    if (!this.db) {
-      console.error(`ERROR: ${dbErrorMessage}`);
       return of(undefined);
     }
 
@@ -329,6 +396,11 @@ export class IdbApi {
    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/IDBObjectStore/put)
    */
   update<T>(key?: string | number, data?: {}, collection?: string): Observable<IDBValidKey | null | undefined> {
+    if (!this.db) {
+      console.error(`ERROR: ${dbErrorMessage}. ${notInitiatedMessage}`);
+      return of(undefined);
+    }
+
     if (!collection) {
       collection = this.collection;
     }
@@ -348,11 +420,6 @@ export class IdbApi {
 
     if (!data) {
       data = {};
-    }
-
-    if (!this.db) {
-      console.error(`ERROR: ${dbErrorMessage}`);
-      return of(undefined);
     }
 
     const objectStore = this.db.transaction(collection, 'readwrite').objectStore(collection);
@@ -416,6 +483,11 @@ export class IdbApi {
       return of(void 0);
     }
 
+    if (!this.db) {
+      console.error(`ERROR: ${dbErrorMessage}. ${notInitiatedMessage}`);
+      return of(void 0);
+    }
+
     if (!collection) {
       collection = this.collection;
     }
@@ -423,11 +495,6 @@ export class IdbApi {
     if (!collection || !isValid(collection)) {
       console.error(`ERROR: ${collectionErrorMessage} "${collection}"`);
       return of(void 0);
-    }
-
-    if (!this.db) {
-      console.error(`ERROR: ${dbErrorMessage}`);
-      return of(undefined);
     }
 
     const objectStore = this.db.transaction(collection, 'readwrite').objectStore('posts');
@@ -464,6 +531,7 @@ export class IdbApi {
     return successCheck.pipe(
       switchMap(() => ofDeleteRequest),
       switchMap((request) => merge(abortEvent(request), errorEvent(request), successEvent(request))),
+      map(() => {}),
       catchError((e: Error) =>
         of(e).pipe(
           tap((e) => console.error(e)),
