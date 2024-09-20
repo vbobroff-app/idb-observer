@@ -78,13 +78,47 @@ idbApi.clear().subscribe();
 > [!WARNING]
 >Don't forget to unsubsribe!
 
+## safe extraxt
+Since database access methods and api initialization are asynchronous, exceptions are possible.  
+Use for safe extract:
+* .safe() - safe extract wrapper
+* .safeList() - safe list method.
+
+> [!IMPORTANT]
+>Using secure extraction, the method will only execute after the api has been initialized. 
+
+If the API is not initialized at the time the method is called, it will waiting for init.  
+Opening the DB and executing in different streams:
+```sh
+const api = new IdbApi();
+const events$ = api.safe(api.list<Event>).pipe(tap((e:Event) => console.log(e)));
+const list$ = api.safeList<Event>();
+const get$ = api.safe(()=>api.get<Event>('target1'));
+   ...
+const client = new IdbClient();
+client.init().subscribe((db)=>api.init(db, 'events'));
+```
+Opening the DB and executing in common stream (no safe wraps):
+
+```sh
+const client = new IdbClient();
+const api = new IdbApi();
+  ...
+const cash$ = this.client.init.pipe(
+  tap((db)=> this.idbApi.init(db, 'events')),
+  switchMap(()=>this.idbApi.list<Event>())
+)
+```
+
+
 |API method|params|result|
 |---       |---       |---   |
+|.clear| (collection?: string) | Observable\<void\> |
 |.create\<T\>| (doc: T, key?: IDBValidKey, collection?: string) | Observable\<string \| undefined\> |
 |.list\<T\>       | (query?: IDBKeyRange, collection?: string)  | Observable<T[]>|
 |.get\<T\>       | (query: IDBValidKey \| IDBKeyRange, collection?: string)  | Observable\<T \| T[] \| null\>|
 |.update\<T\>      | (key?: string \| number, data?: {}, collection?: string) | Observable\<IDBValidKey \| null\>|
 |.remove      | (key: string \| number, collection?: string)  | Observable\<void\>|
-|.clear      | (collection?: string)  | Observable\<void\>|
-
+|.safe\<T\>   | (method: () => Observable<T>)  | Observable\<T\>|
+|.safeList\<T\>   | (query?: IDBKeyRange, collection?: string)  | Observable\<T[]\>|
 
