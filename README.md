@@ -73,6 +73,7 @@ idbApi.update<Post>(id, {author: 'Ivan Ivanov'}).subscribe((id)=>console.log('up
 idbApi.list<Post>().subscribe((posts) => console.log('list', posts));
 idbApi.get<Post>(id).subscribe((post)=>console.log('get', post));
 idbApi.remove(id).subscribe();
+idbApi.clear().subscribe();
 ```
 > [!WARNING]
 >Don't forget to unsubsribe!
