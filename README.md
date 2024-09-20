@@ -47,6 +47,7 @@ client.init().subscribe((db)=> { idbApi.init(db, collection); });
 * .get
 * .update
 * .remove
+* .clear
 
 ## sample
 Create and manipulate the Post object:
@@ -76,12 +77,13 @@ idbApi.remove(id).subscribe();
 > [!WARNING]
 >Don't forget to unsubsribe!
 
-|API method|Parameters|result|
+|API method|params|result|
 |---       |---       |---   |
 |.create\<T\>| (doc: T, key?: IDBValidKey, collection?: string) | Observable\<string \| undefined\> |
 |.list\<T\>       | (query?: IDBKeyRange, collection?: string)  | Observable<T[]>|
 |.get\<T\>       | (query: IDBValidKey \| IDBKeyRange, collection?: string)  | Observable\<T \| T[] \| null\>|
 |.update\<T\>      | (key?: string \| number, data?: {}, collection?: string) | Observable\<IDBValidKey \| null\>|
 |.remove      | (key: string \| number, collection?: string)  | Observable\<void\>|
+|.clear      | (collection?: string)  | Observable\<void\>|
 
 
