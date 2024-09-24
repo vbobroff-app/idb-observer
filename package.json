@@ -1,6 +1,6 @@
 {
   "name": "idb-observer",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "IndexedDB API with rxjs Observable",
   "type": "module",
   "main": "dist/main",

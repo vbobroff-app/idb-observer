@@ -48,6 +48,7 @@ export class IdbApi {
     if (collection) {
       this.setCollection(collection, keyPath, autoIncrement);
     }
+    this.init$.next(db);
   }
 
   /**
@@ -72,7 +73,6 @@ export class IdbApi {
         throw new Error(`${dbErrorMessage} ${db}`);
       }
       this.db = db;
-      this.init$.next(db);
     } catch {
       console.error(`ERROR: DB don't set in API.`);
     }
