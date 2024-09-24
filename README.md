@@ -91,7 +91,7 @@ If the API is not initialized at the time the method is called, it will waiting 
 Opening the DB and executing in different streams:
 ```sh
 const api = new IdbApi();
-const events$ = api.safe(api.list<Event>).pipe(tap((e:Event) => console.log(e)));
+const events$ = api.safe(()=>api.list<Event>()).pipe(tap((e:Event) => console.log(e)));
 const list$ = api.safeList<Event>();
 const get$ = api.safe(()=>api.get<Event>('target1'));
    ...
